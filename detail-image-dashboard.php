@@ -1,38 +1,18 @@
 <?php
-error_reporting(0);
+// error_reporting(0);
 include 'db.php';
 
 // Check if the user is logged in
 session_start();
 $userLoggedIn = isset($_SESSION['a_global']);
 
-$kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
-$a = mysqli_fetch_object($kontak);
+// $kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
+// $a = mysqli_fetch_object($kontak);
 
-$produk = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "' ");
-$p = mysqli_fetch_object($produk);
+$images = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "' ");
+$image = mysqli_fetch_object($images);
 
-// Handle like and unlike
-if ($userLoggedIn && isset($_POST['like'])) {
-    $imageId = $_GET['id'];
-    $admin_name = $_SESSION['a_global']->admin_name;
 
-    // Check if the user already liked the image
-    if ($userLoggedIn) {
-        $checkLiked = mysqli_query($conn, "SELECT * FROM tb_like WHERE image_id = '" . $_GET['id'] . "' AND admin_name = '" . $_SESSION['a_global']->admin_name . "'");
-        $isLiked = (mysqli_num_rows($checkLiked) > 0);
-    } else {
-        $isLiked = false;
-    }
-
-    if (mysqli_num_rows($checkLiked) > 0) {
-        // Unlike if already liked
-        mysqli_query($conn, "DELETE FROM tb_like WHERE image_id = '$imageId' AND admin_name = '$admin_name'");
-    } else {
-        // Like if not liked
-        mysqli_query($conn, "INSERT INTO tb_like (image_id, admin_name) VALUES ('$imageId', '$admin_name')");
-    }
-}
 
 // Get the total likes for the image
 $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
@@ -49,7 +29,7 @@ if ($userLoggedIn && isset($_POST['submit_comment'])) {
 }
 
 // Get comments for the image
-$commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id = '" . $_GET['id'] . "'");
+$commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id = '" . $_GET['id'] . "'". "ORDER BY komentarID DESC");
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -82,8 +62,7 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
     <div class="search">
         <div class="container">
             <form action="galeri.php">
-                <input type="text" name="search" placeholder="Cari Foto" value="<?php echo $_GET['search'] ?>" />
-                <input type="hidden" name="kat" value="<?php echo $_GET['kat'] ?>" />
+                <input type="text" name="search" placeholder="Cari Foto" />
                 <input type="submit" name="cari" value="Cari Foto" />
             </form>
         </div>
@@ -95,14 +74,14 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
             <h3>Detail Foto</h3>
             <div class="box">
                 <div class="col-2">
-                    <img src="foto/<?php echo $p->image ?>" width="100%" />
+                    <img src="foto/<?php echo $image->image ?>" width="100%" />
                 </div>
                 <div class="col-2">
-                    <h3><?php echo $p->image_name ?><br />Kategori : <?php echo $p->category_name  ?></h3>
-                    <h4>Nama User : <?php echo $p->admin_name ?><br />
-                        Upload Pada Tanggal : <?php echo $p->date_created  ?></h4>
+                    <h3><?php echo $image->image_name ?><br />Kategori : <?php echo $image->category_name  ?></h3>
+                    <h4>Nama User : <?php echo $image->admin_name ?><br />
+                        Upload Pada Tanggal : <?php echo $image->date_created  ?></h4>
                     <p>Deskripsi :<br />
-                        <?php echo $p->image_description ?>
+                        <?php echo $image->image_description ?>
                     </p>
                 </div>
             </div>
@@ -113,12 +92,43 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                     <?php if ($userLoggedIn) : ?>
                         <form action="" method="POST">
                             <button type="submit" name="like" class="like" id="like-btn">
-                                <?php if ($isLiked == true) : ?>
-                                    <i class="bi bi-suit-heart-fill"></i> 
-                                <?php else : ?>
-                                    <i class="bi bi-suit-heart"></i> 
-                                <?php endif; ?>
-                                <?php echo $totalLikes ?>
+
+                            <?php 
+                            $isLiked = 0;
+                            // Handle like and unlike
+                                if ($userLoggedIn && isset($_POST['like'])) {
+                                    $imageId = $_GET['id'];
+                                    $admin_name = $_SESSION['a_global']->admin_name;
+
+                                    // Check if the user already liked the image
+                                    if ($userLoggedIn) {
+                                        $checkLiked = mysqli_query($conn, "SELECT * FROM tb_like WHERE image_id = '" . $_GET['id'] . "' AND admin_name = '" . $_SESSION['a_global']->admin_name . "'");
+                                        $isLiked = (mysqli_num_rows($checkLiked) > 0);
+                                    } else {
+                                        $isLiked = false;
+                                    }
+
+                                    if (mysqli_num_rows($checkLiked) > 0) {
+                                        // Unlike if already liked
+                                        mysqli_query($conn, "DELETE FROM tb_like WHERE image_id = '$imageId' AND admin_name = '$admin_name'");
+                                    } else {
+                                        // Like if not liked
+                                        mysqli_query($conn, "INSERT INTO tb_like (image_id, admin_name) VALUES ('$imageId', '$admin_name')");
+                                    }
+                                }
+
+
+                            // Get the total likes for the image
+                                $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
+                                $totalLikes = (mysqli_num_rows($qt) > 0) ? mysqli_fetch_array($qt)['total_likes'] : 0;
+                                
+                                // Button komentar
+                                $isLiked = $isLiked > 0 ? "<i class='bi bi-suit-heart'></i>" : "<i class='bi bi-suit-heart-fill'></i>";
+                               
+                                echo $isLiked;
+                                echo $totalLikes;
+                            ?>
+                               
                             </button>
                         </form>
                     <?php else : ?>
