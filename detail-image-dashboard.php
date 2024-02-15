@@ -4,19 +4,23 @@ include 'db.php';
 
 // Check if the user is logged in
 session_start();
+if($_SESSION['status_login'] != true){
+    echo '<script>window.location="login.php"</script>';
+}
 $userLoggedIn = isset($_SESSION['a_global']);
+$admin_name = $_SESSION['a_global']->admin_name;
 
 // $kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
 // $a = mysqli_fetch_object($kontak);
 
 $images = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "' ");
-$image = mysqli_fetch_object($images);
+$image = mysqli_fetch_object($images); //mengembalikan data dalam bentuk objek / array
 
 
 
 // Get the total likes for the image
 $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
-$totalLikes = (mysqli_num_rows($qt) > 0) ? mysqli_fetch_array($qt)['total_likes'] : 0;
+$totalLikes = (mysqli_num_rows($qt) > 0) ? mysqli_fetch_array($qt)['total_likes'] : 0; //mengambil baris data
 
 // Handle comments
 if ($userLoggedIn && isset($_POST['submit_comment'])) {
@@ -91,10 +95,12 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                     <!-- Like Button -->
                     <?php if ($userLoggedIn) : ?>
                         <form action="" method="POST">
-                            <button type="submit" name="like" class="like" id="like-btn">
+                            <button type="submit" name="like" class="like btn" id="like-btn">
 
                             <?php 
-                            $isLiked = 0;
+                            
+                            $checkLiked;
+
                             // Handle like and unlike
                                 if ($userLoggedIn && isset($_POST['like'])) {
                                     $imageId = $_GET['id'];
@@ -103,10 +109,10 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                                     // Check if the user already liked the image
                                     if ($userLoggedIn) {
                                         $checkLiked = mysqli_query($conn, "SELECT * FROM tb_like WHERE image_id = '" . $_GET['id'] . "' AND admin_name = '" . $_SESSION['a_global']->admin_name . "'");
-                                        $isLiked = (mysqli_num_rows($checkLiked) > 0);
+                                        $isLiked = (mysqli_num_rows($checkLiked));
                                     } else {
-                                        $isLiked = false;
-                                    }
+                                        $isLiked = 0;
+                                    } 
 
                                     if (mysqli_num_rows($checkLiked) > 0) {
                                         // Unlike if already liked
@@ -117,15 +123,30 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                                     }
                                 }
 
+                                // Check Liked
+                                if ($userLoggedIn) {
+                                    $checkLiked = mysqli_query($conn, "SELECT * FROM tb_like WHERE image_id = '" . $_GET['id'] . "' AND admin_name = '" . $_SESSION['a_global']->admin_name . "'");
+                                    $isLiked = (mysqli_num_rows($checkLiked));
+                                } else {
+                                    $isLiked = 0;
+                                }
+
 
                             // Get the total likes for the image
+                                $userLike = mysqli_query($conn, "SELECT admin_name FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
+                                $userLike = mysqli_fetch_array($userLike);
                                 $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
                                 $totalLikes = (mysqli_num_rows($qt) > 0) ? mysqli_fetch_array($qt)['total_likes'] : 0;
                                 
                                 // Button komentar
-                                $isLiked = $isLiked > 0 ? "<i class='bi bi-suit-heart'></i>" : "<i class='bi bi-suit-heart-fill'></i>";
+                                $liked = $isLiked > 0 ? "<i class='bi bi-suit-heart-fill'></i> " : "<i class='bi bi-suit-heart'></i> ";
                                
-                                echo $isLiked;
+                                // var_dump($userLike) ;
+                                // var_dump($userLoggedIn) ;
+                                // var_dump($checkLiked) ;
+                                // var_dump($isLiked) ;
+                                
+                                echo $liked;
                                 echo $totalLikes;
                             ?>
                                

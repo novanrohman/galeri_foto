@@ -1,55 +1,27 @@
 <?php
-error_reporting(0);
+// error_reporting(0);
 include 'db.php';
 
 // Check if the user is logged in
+$userLoggedIn;
 session_start();
 $userLoggedIn = isset($_SESSION['a_global']);
 
-$kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
-$a = mysqli_fetch_object($kontak);
+// $kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
+// $a = mysqli_fetch_object($kontak);
 
-$produk = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "' ");
+$produk = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "'");
 $p = mysqli_fetch_object($produk);
 
-// Handle like and unlike
-if ($userLoggedIn && isset($_POST['like'])) {
-    $imageId = $_GET['id'];
-    $admin_name = $_SESSION['a_global']->admin_name;
-
-    // Check if the user already liked the image
-    if ($userLoggedIn) {
-        $checkLiked = mysqli_query($conn, "SELECT * FROM tb_like WHERE image_id = '" . $_GET['id'] . "' AND admin_name = '" . $_SESSION['a_global']->admin_name . "'");
-        $isLiked = (mysqli_num_rows($checkLiked) > 0);
-    } else {
-        $isLiked = false;
-    }
-
-    if (mysqli_num_rows($checkLiked) > 0) {
-        // Unlike if already liked
-        mysqli_query($conn, "DELETE FROM tb_like WHERE image_id = '$imageId' AND admin_name = '$admin_name'");
-    } else {
-        // Like if not liked
-        mysqli_query($conn, "INSERT INTO tb_like (image_id, admin_name) VALUES ('$imageId', '$admin_name')");
-    }
-}
+$isLiked = 0;
 
 // Get the total likes for the image
 $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
 $totalLikes = (mysqli_num_rows($qt) > 0) ? mysqli_fetch_array($qt)['total_likes'] : 0;
 
-// Handle comments
-if ($userLoggedIn && isset($_POST['submit_comment'])) {
-    $image_id = $_GET['id'];
-    $admin_id = $_SESSION['a_global']->admin_id;
-    $admin_name = $_SESSION['a_global']->admin_name;
-    $isi_komentar = mysqli_real_escape_string($conn, $_POST['komentar']);
-
-    mysqli_query($conn, "INSERT INTO komentar_foto (image_id, admin_id, admin_name, isi_komentar) VALUES ('$image_id', '$admin_id','$admin_name', '$isi_komentar')");
-}
 
 // Get comments for the image
-$commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id = '" . $_GET['id'] . "'");
+$commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id = '" . $_GET['id'] . "'". "ORDER BY komentarID DESC");
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -77,12 +49,11 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
         </div>
     </header>
 
-    <!-- search -->
-    <div class="search">
+   <!-- search -->
+   <div class="search">
         <div class="container">
             <form action="galeri.php">
-                <input type="text" name="search" placeholder="Cari Foto" value="<?php echo $_GET['search'] ?>" />
-                <input type="hidden" name="kat" value="<?php echo $_GET['kat'] ?>" />
+                <input type="text" name="search" placeholder="Cari Foto" />
                 <input type="submit" name="cari" value="Cari Foto" />
             </form>
         </div>
@@ -109,27 +80,15 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
             <div class="col-7">
                 <div class="content">
                     <!-- Like Button -->
-                    <?php if ($userLoggedIn) : ?>
-                        <form action="" method="POST">
-                            <button type="submit" name="like" class="like" id="like-btn">
-                                <?php if ($isLiked == true) : ?>
-                                    <i class="bi bi-suit-heart-fill"></i> 
-                                <?php else : ?>
-                                    <i class="bi bi-suit-heart"></i> 
-                                <?php endif; ?>
-                                <?php echo $totalLikes ?>
-                            </button>
-                        </form>
-                    <?php else : ?>
-                        <button class="like" onclick="showLoginAlert()">
-                            <i class="bi bi-suit-heart"></i> Like
-                        </button>
-                    <?php endif; ?>
+                    <button class="like btn" onclick="showLoginAlert()">
+                            <i class="bi bi-suit-heart"></i> 
+                    <?php echo $totalLikes; ?>
+                    </button>
 
                     <!-- Comment Form -->
                     
                         <form action="" method="POST">
-                            <input type="hidden" name="adminid" value="<?php echo $_SESSION['a_global']->admin_id ?>">
+                            <!-- <input type="hidden" name="adminid" value="<?php echo $_SESSION['a_global']->admin_id ?>"> -->
                             <textarea name="komentar" id="" type="text" cols="300" class="input-control" placeholder="Tulis Komentar..." required></textarea>
                             <input type="submit" onclick="showLoginAlert()" name="submit_comment" value="Kirim Komentar" class="btn">
                         </form>

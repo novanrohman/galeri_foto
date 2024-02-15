@@ -38,6 +38,7 @@ a {
 	box-sizing:border-box;
 }
 .btn {
+	margin-bottom: 20px;
 	padding:8px 15px;
 	background-color: #C70039;
 	color: #fff;
@@ -196,6 +197,7 @@ footer {
 	.col-4 {
 		width:50%;
 		height: 300px;
+		padding: auto;
 	}
 	.col-2 {
 		width:100%;
