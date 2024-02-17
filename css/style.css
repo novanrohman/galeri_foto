@@ -186,6 +186,16 @@ footer {
 	line-height: 25px;
 	font-size: 14px;
 }
+
+.comment{
+	
+	background-color: #c5c5c5;
+	padding: 20px;
+	margin: 10px 0px ;
+	border-radius: 20px;
+	box-shadow: 5px 4px 5px 1px #999;
+}
+
 @media screen and (max-width: 768px) {
 	.container {
 		width: 90%;

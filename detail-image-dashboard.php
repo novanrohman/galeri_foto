@@ -170,10 +170,16 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                     <?php endif; ?>
 
                     <!-- Display Comments -->
-                    <h4>Komentar:</h4>
-                    <?php while ($comment = mysqli_fetch_object($commentQuery)) : ?>
-                        <p><strong><?php echo $comment->admin_name; ?>:</strong> <?php echo $comment->isi_komentar; ?></p>
-                    <?php endwhile; ?>
+                    <h4>Komentar: </h4>
+                    <?php while($comment = mysqli_fetch_object($commentQuery)) : ?>
+                        <div class="comment">
+                                <p><strong><?php echo $comment->admin_name;?></strong></p>
+                                <p><?php echo $comment->isi_komentar;?></p>
+                                <span><?php echo $comment->tanggal_komentar; ?></span> 
+                              <a href="proses-hapus-komentar.php?idp=<?php echo $comment->komentarID ?>" onclick="return confirm('Yakin Ingin Hapus ?')">Hapus</a>
+                            </div>
+
+                            <?php endwhile; ?>
                 </div>
             </div>
         </div>

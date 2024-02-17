@@ -3,17 +3,17 @@
 include 'db.php';
 
 // Check if the user is logged in
-$userLoggedIn;
-session_start();
-$userLoggedIn = isset($_SESSION['a_global']);
+// $userLoggedIn;
+// session_start();
+// $userLoggedIn = isset($_SESSION['a_global']);
 
-// $kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
-// $a = mysqli_fetch_object($kontak);
+$kontak = mysqli_query($conn, "SELECT admin_telp, admin_email, admin_address FROM tb_admin WHERE admin_id = 2");
+$a = mysqli_fetch_object($kontak);
 
 $produk = mysqli_query($conn, "SELECT * FROM tb_image WHERE image_id = '" . $_GET['id'] . "'");
 $p = mysqli_fetch_object($produk);
 
-$isLiked = 0;
+// $isLiked = 0;
 
 // Get the total likes for the image
 $qt = mysqli_query($conn, "SELECT COUNT(*) AS total_likes FROM tb_like WHERE image_id = '" . $_GET['id'] . "'");
@@ -95,10 +95,14 @@ $commentQuery = mysqli_query($conn, "SELECT * FROM komentar_foto WHERE image_id 
                    
 
                     <!-- Display Comments -->
-                    <h4>Komentar:</h4>
-                    <?php while ($comment = mysqli_fetch_object($commentQuery)) : ?>
-                        <p><strong><?php echo $comment->admin_name; ?>:</strong> <?php echo $comment->isi_komentar; ?></p>
-                    <?php endwhile; ?>
+                    <h4>Komentar: </h4>
+                    <?php while($comment = mysqli_fetch_object($commentQuery)) : ?>
+                        <div class="comment">
+                            <p><strong><?php echo $comment->admin_name;?></strong></p>
+                            <p><?php echo $comment->isi_komentar;?></p>
+                            <span><?php echo $comment->tanggal_komentar; ?></span> 
+                        </div>
+                        <?php endwhile; ?>
                 </div>
             </div>
         </div>
